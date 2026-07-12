@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>REB — Realistic Cockpit</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#000;overflow:hidden}
+    .tab-bar{display:flex;border-bottom:2px solid #1e2a3a;background:#0a0f18;position:fixed;top:0;left:0;right:0;z-index:99999}
+    .tab-bar a{padding:10px 28px;font-family:'Courier New',monospace;font-size:13px;font-weight:bold;letter-spacing:1px;text-decoration:none;transition:all .2s}
+    .tab-bar a.off{color:#556;border-bottom:3px solid transparent;background:#0a0f18}
+    .tab-bar a.off:hover{color:#4af}
+    .tab-bar a.on{color:#4af;border-bottom:3px solid #4af;background:#04090f}
+    #root{position:fixed;top:37px;left:0;right:0;bottom:0}
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<nav class="tab-bar">
+  <a href="/" class="off">TECHNICAL INTERFACE</a>
+  <a href="/cockpit" class="on">REALISTIC COCKPIT</a>
+</nav>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="/static/cockpit.js"></script>
+</body>
+</html>

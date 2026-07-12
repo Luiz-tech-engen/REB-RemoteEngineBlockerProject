@@ -1,0 +1,176 @@
+/** @brief Global design token definitions.
+ *
+ *  All colour, radius, and transition values are declared as custom properties
+ *  so that theme changes propagate consistently across every rule that
+ *  references them via var(). */
+:root {
+  --bg:       #080e1c;
+  --panel:    #0f172a;
+  --line:     rgba(255,255,255,.09);
+  --text:     #e8eeff;
+  --muted:    #7b8ab0;
+  --accent:   #6ea6ff;
+  --green:    #4ddc8a;
+  --yellow:   #f5b942;
+  --red:      #ff5252;
+  --orange:   #ff8c42;
+  --rad:      18px;
+  --ts:       .18s ease;
+}
+*  { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Inter,Segoe UI,system-ui,sans-serif; background: radial-gradient(ellipse at top,#14264a 0%,var(--bg) 60%); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+.shell { max-width: 1680px; margin: 0 auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+
+.hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; background: linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.01)); border: 1px solid var(--line); border-radius: var(--rad); padding: 20px 24px; }
+.eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: var(--green); margin-bottom: 6px; }
+.hero h1 { font-size: clamp(20px,2.2vw,34px); margin-bottom: 6px; }
+.hero p  { color: var(--muted); line-height: 1.5; max-width: 500px; }
+.hero-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+
+.card { background: linear-gradient(160deg,rgba(255,255,255,.04),rgba(255,255,255,.01)); border: 1px solid var(--line); border-radius: var(--rad); padding: 16px; }
+.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.card-head h2 { font-size: 14px; font-weight: 600; }
+
+/** @brief Three-column layout: fixed-width left sidebar, two fluid columns.
+ *
+ *  Collapses to two columns below 1200 px and to a single column below 780 px
+ *  via the responsive overrides at the end of this file. */
+.main-grid { display: grid; grid-template-columns: 280px 1fr 1fr; gap: 14px; align-items: start; }
+.col-left, .col-center, .col-right { display: flex; flex-direction: column; gap: 14px; }
+
+.chip { background: rgba(255,255,255,.05); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 12px; }
+.chip span { color: var(--muted); display: block; font-size: 10px; }
+.chip strong { display: block; margin-top: 1px; }
+.badge { background: rgba(110,166,255,.12); border: 1px solid rgba(110,166,255,.25); color: var(--accent); border-radius: 999px; padding: 3px 10px; font-size: 11px; }
+.badge-source, .badge-phase { background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; font-size: 11px; color: var(--green); }
+
+/** @brief FSM state node styling.
+ *
+ *  Each modifier class maps to the corresponding FSM state and overrides
+ *  border colour, background tint, and optional glow so that the active
+ *  state is visually distinct without JS-driven inline styles. */
+.fsm-row { display: flex; align-items: center; gap: 6px; overflow-x: auto; }
+.fsm-node { flex: 1; min-width: 110px; padding: 10px 12px; border: 2px solid var(--line); border-radius: 12px; text-align: center; background: rgba(255,255,255,.03); transition: border-color var(--ts), background var(--ts), box-shadow var(--ts); }
+.fsm-node.active         { border-color: var(--accent); background: rgba(110,166,255,.1); box-shadow: 0 0 18px rgba(110,166,255,.18); }
+.fsm-node.active-THEFT_CONFIRMED { border-color: var(--orange); background: rgba(255,140,66,.08); }
+.fsm-node.active-BLOCKING        { border-color: var(--yellow); background: rgba(245,185,66,.07); box-shadow: 0 0 18px rgba(245,185,66,.14); }
+.fsm-node.active-BLOCKED         { border-color: var(--red);    background: rgba(255,82,82,.1);  box-shadow: 0 0 20px rgba(255,82,82,.2); }
+.fsm-name { font-weight: 700; font-size: 12px; }
+.fsm-desc { color: var(--muted); font-size: 10px; margin-top: 2px; }
+.fsm-subtimer { font-size: 11px; color: var(--yellow); font-weight: 600; margin-top: 4px; }
+.fsm-arrow { color: var(--muted); font-size: 18px; flex-shrink: 0; }
+
+.state-badge { font-weight: 700; font-size: 13px; padding: 4px 12px; border-radius: 999px; border: 2px solid var(--line); transition: all var(--ts); }
+.state-badge.IDLE            { border-color: var(--accent); color: var(--accent); }
+.state-badge.THEFT_CONFIRMED { border-color: var(--orange); color: var(--orange); }
+.state-badge.BLOCKING        { border-color: var(--yellow); color: var(--yellow); }
+.state-badge.BLOCKED         { border-color: var(--red);    color: var(--red); }
+
+.alert-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.alert-tile { flex: 1; min-width: 100px; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.03); font-size: 12px; transition: border-color var(--ts), background var(--ts); }
+.alert-tile.on      { border-color: var(--red);    background: rgba(255,82,82,.1); }
+.alert-tile.on-warn { border-color: var(--yellow); background: rgba(245,185,66,.07); }
+.alert-icon { font-size: 18px; }
+
+button, select, input { font: inherit; }
+button { border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--text); border-radius: 10px; padding: 9px 14px; cursor: pointer; transition: border-color var(--ts), background var(--ts), opacity var(--ts); }
+button:hover:not(:disabled) { border-color: rgba(110,166,255,.4); background: rgba(110,166,255,.08); }
+button:disabled { opacity: .35; cursor: not-allowed; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #4060e0); border-color: transparent; font-weight: 600; }
+.btn-ghost { background: rgba(255,255,255,.03); }
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+
+.seg { display: flex; gap: 5px; flex-wrap: wrap; }
+.seg-btn { flex: 1; border-radius: 8px; padding: 7px 10px; font-size: 12px; text-align: center; }
+.seg-btn.active { background: linear-gradient(135deg, var(--accent), #3d5ccc); border-color: transparent; font-weight: 600; }
+
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.action-btn { border-radius: 8px; padding: 8px 10px; font-size: 12px; text-align: left; }
+.action-btn.ok     { border-color: rgba(77,220,138,.3);  background: rgba(77,220,138,.06); }
+.action-btn.locked { border-color: rgba(255,82,82,.45);  background: rgba(255,82,82,.08); color: var(--red); }
+.action-btn.sim    { border-color: rgba(245,185,66,.25); background: rgba(245,185,66,.05); color: var(--yellow); }
+.action-btn.sim.locked { border-color: rgba(255,82,82,.35); background: rgba(255,82,82,.06); color: var(--red); }
+
+.exec-label { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 10px 0 6px; }
+.exec-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+
+.scen-progress { margin-top: 10px; }
+.scen-progress.hidden { display: none; }
+.prog-track { height: 5px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; margin-bottom: 4px; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 999px; transition: width .08s; }
+#scenLabel { font-size: 11px; color: var(--muted); }
+
+.ar-box { background: rgba(255,255,255,.03); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.ar-status { font-size: 15px; font-weight: 700; margin-bottom: 5px; transition: color var(--ts); }
+.ar-status.ok { color: var(--green); }
+.ar-status.bad { color: var(--red); }
+.ar-detail { display: flex; gap: 12px; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+.ar-detail strong { color: var(--text); }
+
+.panel-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.panel-lock { background: rgba(255,82,82,.12); border: 1px solid rgba(255,82,82,.35); color: var(--red); border-radius: 8px; padding: 3px 10px; font-size: 11px; }
+.panel-lock.hidden { display: none; }
+.panel-dots { display: flex; gap: 7px; }
+.pdot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,.1); border: 2px solid var(--line); transition: all var(--ts); }
+.pdot.used   { background: var(--yellow); border-color: var(--yellow); }
+.pdot.locked { background: var(--red);    border-color: var(--red); }
+
+.metric-block { margin-bottom: 14px; }
+.metric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 13px; }
+.metric-note { font-size: 10px; margin-top: 3px; }
+.metric-note.hidden { display: none; }
+.gauge { height: 8px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+.gfill { height: 100%; border-radius: 999px; transition: width .22s ease; min-width: 0; }
+
+/** @brief Gauge fill colour variants.
+ *
+ *  Each modifier applies a distinct gradient to differentiate metric types:
+ *  speed, effective speed after derating, derate percentage, reversal window,
+ *  and dwell time. */
+.g-speed   { background: linear-gradient(90deg, var(--accent), #7af0c8); }
+.g-eff     { background: linear-gradient(90deg, var(--green), var(--accent)); }
+.g-derate  { background: linear-gradient(90deg, var(--red), var(--yellow), var(--green)); }
+.g-reversal { background: linear-gradient(90deg, var(--orange), var(--red)); }
+.g-dwell   { background: linear-gradient(90deg, var(--accent), var(--green)); }
+
+.status-pill { border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 600; border: 1px solid; }
+.status-pill.ok      { color: var(--green);  border-color: rgba(77,220,138,.35);  background: rgba(77,220,138,.08); }
+.status-pill.danger  { color: var(--red);    border-color: rgba(255,82,82,.35);   background: rgba(255,82,82,.08); }
+.status-pill.warning { color: var(--yellow); border-color: rgba(245,185,66,.35);  background: rgba(245,185,66,.07); }
+
+.group { background: rgba(255,255,255,.02); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.group h3 { font-size: 12px; color: var(--green); margin-bottom: 8px; }
+.field { margin-bottom: 9px; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.field input[type="number"], .field select { width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: rgba(0,0,0,.2); color: var(--text); font-size: 13px; }
+.field input[type="range"] { width: 100%; accent-color: var(--accent); }
+.field input.locked { opacity: .3; pointer-events: none; }
+.pill { background: rgba(255,255,255,.08); border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; font-size: 10px; margin-left: 6px; }
+.ignition-seg { display: flex; gap: 4px; }
+.ignition-seg .seg-btn { flex: 1; font-size: 11px; padding: 6px 3px; }
+
+.kv { display: flex; flex-direction: column; gap: 4px; }
+.kv-row { display: flex; justify-content: space-between; padding: 5px 9px; border-radius: 7px; background: rgba(255,255,255,.03); border: 1px solid var(--line); font-size: 12px; }
+.kv-row span { color: var(--muted); }
+.kv-row.danger { border-color: rgba(255,82,82,.3); background: rgba(255,82,82,.05); }
+.kv-row.warn   { border-color: rgba(245,185,66,.25); background: rgba(245,185,66,.04); }
+.kv-row.ok     { border-color: rgba(77,220,138,.2);  background: rgba(77,220,138,.04); }
+
+.logs { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow: auto; }
+.log-entry { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: rgba(255,255,255,.02); font-size: 11px; }
+.log-entry.ev-state { border-color: rgba(110,166,255,.25); }
+.log-entry.ev-auth  { border-color: rgba(255,82,82,.25); }
+.log-entry.ev-ok    { border-color: rgba(77,220,138,.2); }
+.log-head { display: flex; gap: 8px; align-items: center; font-size: 12px; margin-bottom: 4px; }
+.log-head strong { }
+.log-head .ts { color: var(--muted); }
+.log-body { color: var(--muted); white-space: pre-wrap; }
+
+/** @brief Responsive breakpoints.
+ *
+ *  At 1200 px the three-column grid collapses to two columns with the left
+ *  sidebar spanning both. At 780 px all columns stack into a single column. */
+@media (max-width: 1200px) { .main-grid { grid-template-columns: 1fr 1fr; } .col-left { grid-column: 1/3; } }
+@media (max-width: 780px)  { .main-grid { grid-template-columns: 1fr; } .col-left { grid-column: auto; } }

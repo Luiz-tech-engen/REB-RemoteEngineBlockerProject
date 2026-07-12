@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>REB — Integrated Simulation</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+<div class="shell">
+
+  <nav style="display:flex;gap:0;border-bottom:2px solid #1e2a3a;margin-bottom:0;background:#0a0f18;position:sticky;top:0;z-index:999;">
+    <a id="tab-tecnica" href="/" style="
+      padding:10px 28px;font-family:'Courier New',monospace;font-size:13px;
+      font-weight:bold;letter-spacing:1px;color:#4af;border-bottom:3px solid #4af;
+      background:#04090f;text-decoration:none;cursor:pointer;transition:all .2s;
+    "> TECHNICAL INTERFACE</a>
+    <a id="tab-cockpit" href="/cockpit" style="
+      padding:10px 28px;font-family:'Courier New',monospace;font-size:13px;
+      font-weight:bold;letter-spacing:1px;color:#556;border-bottom:3px solid transparent;
+      background:#0a0f18;text-decoration:none;cursor:pointer;transition:all .2s;
+    " onmouseover="this.style.color='#4af'" onmouseout="this.style.color='#556'">REALISTIC COCKPIT</a>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-text">
+      <div class="eyebrow">REB · Remote Engine Blocker </div>
+      <h1>Integrated Simulation Environment</h1>
+      <p></p>
+    </div>
+    <div class="hero-chips">
+      <div class="chip"><span>Ts</span><strong>10 ms</strong></div>
+      <div class="chip"><span>V<sub>stop</sub></span><strong>0,5 km/h</strong></div>
+      <div class="chip"><span>Fuel floor</span><strong>10 %</strong></div>
+      <div class="chip"><span>Sensor Fusion threshold</span><strong>0,7</strong></div>
+      <div class="chip"><span>Dwell</span><strong>120 s</strong></div>
+      <div class="chip"><span>Reversal</span><strong>60 s</strong></div>
+      <div class="chip"><span>Lockout</span><strong>3 failures</strong></div>
+    </div>
+  </header>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>FSM — Finite State Machine</h2>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="badge" id="simTimeBadge">t = 0 ms</span>
+        <span class="badge-source" id="sourceBadge">—</span>
+        <span class="badge-phase" id="phaseBadge">—</span>
+      </div>
+    </div>
+    <div class="fsm-row">
+      <div class="fsm-node" id="fsm-IDLE">
+        <div class="fsm-name">IDLE</div>
+        <div class="fsm-desc">Monitoring</div>
+      </div>
+      <div class="fsm-arrow">→</div>
+      <div class="fsm-node" id="fsm-THEFT_CONFIRMED">
+        <div class="fsm-name">THEFT_CONFIRMED</div>
+        <div class="fsm-desc">Theft confirmed</div>
+        <div class="fsm-subtimer" id="subtimerTC"></div>
+      </div>
+      <div class="fsm-arrow">→</div>
+      <div class="fsm-node" id="fsm-BLOCKING">
+        <div class="fsm-name">BLOCKING</div>
+        <div class="fsm-desc">Progressive derate</div>
+        <div class="fsm-subtimer" id="subtimerBK"></div>
+      </div>
+      <div class="fsm-arrow">→</div>
+      <div class="fsm-node" id="fsm-BLOCKED">
+        <div class="fsm-name">BLOCKED</div>
+        <div class="fsm-desc">Starter inhibited</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Active Alerts</h2></div>
+    <div class="alert-row">
+      <div class="alert-tile" id="tileVisual">
+        
+        <span>Hazard Lights</span>
+        <strong id="valVisual">OFF</strong>
+      </div>
+      <div class="alert-tile" id="tileSonic">
+        
+        <span>Horn</span>
+        <strong id="valSonic">OFF</strong>
+      </div>
+      <div class="alert-tile" id="tilePreBlock">
+        
+        <span>Pre-block</span>
+        <strong id="valPreBlock">OFF</strong>
+      </div>
+      <div class="alert-tile" id="tileTheft">
+        
+        <span>Theft Notif.</span>
+        <strong id="valTheft">OFF</strong>
+      </div>
+      <div class="alert-tile" id="tileBlocked">
+        
+        <span>Vehicle blocked</span>
+        <strong id="valBlocked">OFF</strong>
+      </div>
+      <div class="alert-tile" id="tileStarter">
+        
+        <span>Starter inhibited</span>
+        <strong id="valStarter">FREE</strong>
+      </div>
+    </div>
+  </section>
+
+  <div class="display-grid">
+
+    <div class="display-col">
+      <section class="card" style="height:100%;box-sizing:border-box;">
+        <div class="card-head"><h2>Speed and derate</h2><span id="stateBadge" class="state-badge">IDLE</span></div>
+
+        <div class="metric-block">
+          <div class="metric-row">
+            <span> Vehicle speed</span><strong id="lblSpeedReal">0,0 km/h</strong>
+          </div>
+          <div class="gauge"><div id="barSpeedReal" class="gfill g-speed"></div></div>
+        </div>
+
+        <div class="metric-block">
+          <div class="metric-row">
+            <span> Effective speed <span class="muted">(v × derate%)</span></span>
+            <strong id="lblSpeedEff">0,0 km/h</strong>
+          </div>
+          <div class="gauge"><div id="barSpeedEff" class="gfill g-eff"></div></div>
+          <div id="noteVstop" class="metric-note hidden"> v_eff ≤ V<sub>stop</sub> — dwell active</div>
+        </div>
+
+        <div class="metric-block">
+          <div class="metric-row">
+            <span> Fuel pump derate</span><strong id="lblDerate">100%</strong>
+          </div>
+          <div class="gauge"><div id="barDerate" class="gfill g-derate"></div></div>
+          <div id="noteFloor" class="metric-note hidden">Safety floor active — ≥ 10%</div>
+        </div>
+
+        <div class="metric-block" id="blockReversal">
+          <div class="metric-row">
+            <span> Reversal window AUTO <span class="muted">(60 s)</span></span>
+            <strong id="lblReversal">—</strong>
+          </div>
+          <div class="gauge"><div id="barReversal" class="gfill g-reversal"></div></div>
+        </div>
+
+        <div class="metric-block" id="blockDwell">
+          <div class="metric-row">
+            <span> Parked dwell <span class="muted">(120 s)</span></span>
+            <strong id="lblDwell">—</strong>
+          </div>
+          <div class="gauge"><div id="barDwell" class="gfill g-dwell"></div></div>
+        </div>
+
+        <div class="metric-block">
+          <div class="metric-row">
+            <span> Starter motor</span>
+            <div id="starterBadge" class="status-pill ok">RELEASED</div>
+          </div>
+        </div>
+
+        <div class="metric-block">
+          <div class="metric-row">
+            <span> TCU channel</span>
+            <div id="channelBadge" class="status-pill ok">4G OK</div>
+          </div>
+        </div>
+
+        <div class="metric-block">
+          <div class="metric-row">
+            <span> Powertrain signals </span>
+            <div id="pwtBadge" class="status-pill ok">VALID</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="display-col">
+
+      <section class="card">
+        <div class="card-head"><h2>Anti-replay</h2></div>
+        <div id="arBox" class="ar-box">
+          <div id="arStatus" class="ar-status">—</div>
+          <div class="ar-detail">
+            <span>Reason: <strong id="arReason">—</strong></span>
+            <span>Nonce: <strong id="arNonce">—</strong></span>
+            <span>Channel: <strong id="arChannel">—</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Physical panel</h2></div>
+        <div class="panel-row">
+          <span class="muted">Attempts: <strong id="panelCnt">0 / 3</strong></span>
+          <div id="panelLock" class="panel-lock hidden"> LOCKED</div>
+        </div>
+        <div class="panel-dots">
+          <div class="pdot" id="dot0"></div>
+          <div class="pdot" id="dot1"></div>
+          <div class="pdot" id="dot2"></div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="display-col">
+
+      <section class="card">
+        <div class="card-head"><h2>Execution</h2></div>
+
+        <div class="exec-label">Cycles per step</div>
+        <div class="seg" id="cycleButtons">
+          <button class="seg-btn cycle-btn active" data-cycles="1">×1</button>
+          <button class="seg-btn cycle-btn" data-cycles="10">×10</button>
+          <button class="seg-btn cycle-btn" data-cycles="100">×100</button>
+          <button class="seg-btn cycle-btn" data-cycles="1000">×1000</button>
+        </div>
+
+        <div class="exec-row">
+          <button id="btnStep"  class="btn-primary">▶ Step</button>
+          <button id="btnRun"   class="btn-ghost">⏩ Turbo</button>
+          <button id="btnStop"  class="btn-ghost" disabled>⏹ Stop</button>
+          <button id="btnReset" class="btn-ghost">↺ Clean</button>
+        </div>
+
+        <div class="exec-label">Turbo speed (ms between frames)</div>
+        <div class="seg" id="turboSpeed">
+          <button class="seg-btn turbo-btn active" data-delay="0">Max</button>
+          <button class="seg-btn turbo-btn" data-delay="50">Slow</button>
+          <button class="seg-btn turbo-btn" data-delay="200">Visual</button>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <div class="inputs-grid">
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Inputs</h2>
+        <span id="modeHint" class="badge">Mode: AUTO</span>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label> Initial speed (km/h)
+              <span id="speedInicialLock" class="muted" style="display:none">  locked</span>
+        </label>
+        <input type="number" id="inputSpeedInicial" min="0" max="250" step="1" value="0"
+                  style="width:100%;margin-top:4px">
+      </div>
+      <div id="inputs"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>FSM Outputs</h2></div>
+      <div id="outputs" class="kv"></div>
+    </section>
+
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Event Log</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="logCountBadge" class="badge">0 events</span>
+        <span id="nvmLoadedBadge" class="badge" style="display:none"> NVM restored</span>
+        <button id="btnClearLogs" class="btn-ghost btn-sm">Clear</button>
+      </div>
+    </div>
+    <div id="logs" class="logs"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Post-Reset State Recovery</h2></div>
+    <p style="font-size:0.85em;color:var(--muted);margin-bottom:12px">
+      Persists FSM state to NVM and restores it after a power cycle without clearing memory.
+    </p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button id="btnPowerCycle" class="action-btn" title="Simulates power-off without clearing NVM">
+        Power Cycle
+      </button>
+      <button id="btnTestNfrRel001" class="action-btn sim" title="Full automated post-reset recovery test">
+        Run Test
+      </button>
+    </div>
+    <div id="nfrRel001Result" style="margin-top:12px;display:none"></div>
+  </section>
+
+
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
